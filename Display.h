@@ -85,6 +85,11 @@ void busyCallback(const void* p) { display_callback(); }
   #define DISP_ADDR 0x3C
   #define SCL_OLED 18
   #define SDA_OLED 17
+#elif BOARD_MODEL == BOARD_HELTEC32_V4
+  #define DISP_RST 21
+  #define DISP_ADDR 0x3C
+  #define SCL_OLED 18
+  #define SDA_OLED 17
 #elif BOARD_MODEL == BOARD_RNODE_NG_21
   #if DISPLAY == OLED
   #define DISP_RST -1
@@ -99,6 +104,7 @@ void busyCallback(const void* p) { display_callback(); }
   #endif
 #elif BOARD_MODEL == BOARD_RAK4631 || BOARD_MODEL == BOARD_OPENCOM_XL
   #if DISPLAY == OLED
+#elif BOARD_MODEL == BOARD_RAK4631
   // RAK1921/SSD1306
   #define DISP_RST -1
   #define DISP_ADDR 0x3C
@@ -341,6 +347,18 @@ bool display_init() {
       digitalWrite(pin_display_en, HIGH);
       delay(50);
       Wire.begin(SDA_OLED, SCL_OLED);
+    #elif BOARD_MODEL == BOARD_HELTEC32_V4
+      // enable vext / pin 36
+      pinMode(Vext, OUTPUT);
+      digitalWrite(Vext, LOW);
+      delay(50);
+      int pin_display_en = 21;
+      pinMode(pin_display_en, OUTPUT);
+      digitalWrite(pin_display_en, LOW);
+      delay(50);
+      digitalWrite(pin_display_en, HIGH);
+      delay(50);
+      Wire.begin(SDA_OLED, SCL_OLED);
     #elif BOARD_MODEL == BOARD_LORA32_V1_0
       int pin_display_en = 16;
       digitalWrite(pin_display_en, LOW);
@@ -449,6 +467,7 @@ bool display_init() {
         }
         display.setRotation(display_rotation);
       } else {
+<<<<<<< HEAD
           #if BOARD_MODEL == BOARD_RNODE_NG_20
             disp_mode = DISP_MODE_PORTRAIT;
             display.setRotation(3);
@@ -484,6 +503,9 @@ bool display_init() {
           #elif BOARD_MODEL == BOARD_HELTEC32_V3
             disp_mode = DISP_MODE_PORTRAIT;
             display.setRotation(1);
+        #elif BOARD_MODEL == BOARD_HELTEC32_V4
+          disp_mode = DISP_MODE_PORTRAIT;
+          display.setRotation(1);
           #elif BOARD_MODEL == BOARD_RAK4631 || BOARD_MODEL == BOARD_OPENCOM_XL
             disp_mode = DISP_MODE_LANDSCAPE;
             display.setRotation(0);
