@@ -391,6 +391,8 @@ bool display_init() {
       Wire.begin(SDA_OLED, SCL_OLED);
     #elif BOARD_MODEL == BOARD_XIAO_S3
       Wire.begin(SDA_OLED, SCL_OLED);
+    #elif BOARD_MODEL == BOARD_STATION_G2
+      Wire.begin(SDA_OLED, SCL_OLED);
     #endif
 
     #if HAS_EEPROM
