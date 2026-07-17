@@ -1132,6 +1132,7 @@
       #define HAS_NP false
       #define HAS_SD false
       #define HAS_EEPROM true
+      #define VALIDATE_FIRMWARE false
 
       #define HAS_INPUT true
       #define HAS_SLEEP true
