@@ -135,6 +135,13 @@ void busyCallback(const void* p) { display_callback(); }
   #define SCL_OLED 6
   #define SDA_OLED 5
   #define DISP_CUSTOM_ADDR true
+#elif BOARD_MODEL == BOARD_STATION_G2
+  // 1.3" OLED (SSH1107) on I2C, same I2C pins as XIAO_S3 (GROVE I2C socket)
+  #define DISP_RST -1
+  #define DISP_ADDR 0x3C
+  #define SCL_OLED 6
+  #define SDA_OLED 5
+  #define DISP_CUSTOM_ADDR true
 #else
   #define DISP_RST -1
   #define DISP_ADDR 0x3C
@@ -171,6 +178,8 @@ uint32_t last_epd_full_refresh = 0;
   #elif BOARD_MODEL == BOARD_TDECK
     Adafruit_ST7789 display = Adafruit_ST7789(DISPLAY_CS, DISPLAY_DC, -1);
   #elif BOARD_MODEL == BOARD_TBEAM_S_V1
+    Adafruit_SH1106G display = Adafruit_SH1106G(DISP_W, DISP_H, &Wire, -1);
+  #elif BOARD_MODEL == BOARD_STATION_G2
     Adafruit_SH1106G display = Adafruit_SH1106G(DISP_W, DISP_H, &Wire, -1);
   #elif BOARD_MODEL == BOARD_HELTEC_T114
     ST7789Spi display(&SPI1, DISPLAY_RST, DISPLAY_DC, DISPLAY_CS);
@@ -311,6 +320,9 @@ uint8_t display_contrast = 0x00;
 #elif BOARD_MODEL == BOARD_OPENCOM_XL || BOARD_MODEL == BOARD_RAK4631 || BOARD_MODEL == BOARD_H_W_PAPER
   // no backlight on these displays
   void set_contrast (void* display, uint8_t contrast) {};
+#elif DISPLAY == MONO_OLED
+  // SH1106/SH1107 OLED displays (e.g. T-Beam Supreme, Station G2)
+  void set_contrast (void* display, uint8_t contrast) {};
 #else
   void set_contrast(Adafruit_SSD1306 *display, uint8_t contrast) {
     display->ssd1306_command(SSD1306_SETCONTRAST);
@@ -432,6 +444,8 @@ bool display_init() {
     display.setRGB(COLOR565(0xFF, 0xFF, 0xFF));
     if (false) {
     #elif BOARD_MODEL == BOARD_TBEAM_S_V1
+    if (!display.begin(display_address, true)) {
+    #elif BOARD_MODEL == BOARD_STATION_G2
     if (!display.begin(display_address, true)) {
     #else
     if (!display.begin(SSD1306_SWITCHCAPVCC, display_address)) {

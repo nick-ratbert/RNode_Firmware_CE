@@ -123,6 +123,11 @@
   #define MODEL_16            0x16 // T-Echo 433 MHz
   #define MODEL_17            0x17 // T-Echo 868/915 MHz
 
+  #define PRODUCT_STATION_G2   0x60 // B&Q Station G2 devices
+  #define BOARD_STATION_G2     0x61 // Station G2 (ESP32-S3 + SX1262)
+  #define MODEL_62             0x62 // Station G2, 915 MHz (US/AUS)
+  #define MODEL_63             0x63 // Station G2, 868 MHz (EU/UK)
+
   #define PRODUCT_HMBRW       0xF0
   #define BOARD_HMBRW         0x32
   #define BOARD_HUZZAH32      0x34
@@ -1104,6 +1109,77 @@
           const int pin_led_tx = 48; //47;
         #endif
       #endif
+    #elif BOARD_MODEL == BOARD_STATION_G2
+      // B&Q Station G2 - ESP32-S3 with SX1262, 35dBm PA, LNA, 32MHz TCXO,
+      // 1.3" OLED (SSH1107), WiFi, BLE, no battery/PMU.
+      // Pin mapping sourced from Meshtastic variant.h and community research:
+      // https://github.com/markqvist/Reticulum/discussions/558
+      // https://github.com/liberatedsystems/RNode_Firmware_CE/issues/79
+      #define IS_ESP32S3 true
+      #define MODEM SX1262
+      #define DIO2_AS_RF_SWITCH true
+      #define HAS_BUSY true
+      #define HAS_TCXO true
+      #define OCP_TUNED 0x18
+
+      #define HAS_DISPLAY true
+      #define DISPLAY MONO_OLED
+      #define HAS_WIFI true
+      #define HAS_BLUETOOTH false
+      #define HAS_BLE true
+      #define HAS_PMU false
+      #define HAS_CONSOLE true
+      #define HAS_NP false
+      #define HAS_SD false
+      #define HAS_EEPROM true
+
+      #define HAS_INPUT true
+      #define HAS_SLEEP true
+      #define PIN_WAKEUP GPIO_NUM_38
+      #define WAKEUP_LEVEL 0
+
+      #define INTERFACE_COUNT 1
+
+      // I2C for OLED display (GROVE I2C socket)
+      #define I2C_SCL 6
+      #define I2C_SDA 5
+
+      const int pin_btn_usr1 = 38;
+
+      // External LEDs on GPIO 8 and 9 (exposed on IO extension socket)
+      #if defined(EXTERNAL_LEDS)
+        const int pin_led_rx = 9;
+        const int pin_led_tx = 8;
+      #else
+        const int pin_led_rx = 9;
+        const int pin_led_tx = 8;
+      #endif
+
+      // SX1262 SPI pins (from Meshtastic station-g2 variant.h)
+      const uint8_t interfaces[INTERFACE_COUNT] = {SX1262};
+      const bool interface_cfg[INTERFACE_COUNT][3] = {
+                    // SX1262
+          {
+              false, // DEFAULT_SPI
+              true,  // HAS_TCXO
+              true   // DIO2_AS_RF_SWITCH
+          },
+      };
+      const int8_t interface_pins[INTERFACE_COUNT][10] = {
+                  // SX1262
+          {
+              11, // pin_ss
+              12, // pin_sclk
+              13, // pin_mosi
+              14, // pin_miso
+              47, // pin_busy
+              48, // pin_dio
+              21, // pin_reset
+              -1, // pin_txen
+              -1, // pin_rxen
+              -1  // pin_tcxo_enable
+          }
+      };
     #else
       #error An unsupported ESP32 board was selected. Cannot compile RNode firmware.
     #endif
