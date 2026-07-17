@@ -47,13 +47,26 @@
 	bool console_active = false;
 	bool modems_installed = false;
 
-	#define MTU   	   508
+	// WiFi Remote state
+	#define WR_CHANNEL_DEFAULT 1
+	#define WR_WIFI_OFF 0x00
+	#define WR_WIFI_STA 0x01
+	#define WR_WIFI_AP  0x02
+	#define WR_STATE_NA       0xff
+	#define WR_STATE_OFF      0x00
+	#define WR_STATE_ON       0x01
+	#define WR_STATE_CONNECTED 0x02
+	uint8_t wr_state = WR_STATE_OFF;
+	uint8_t wr_channel = WR_CHANNEL_DEFAULT;
+
+	#define MTU  	   508
 	#define SINGLE_MTU 255
 	#define HEADER_L   1
 	#define MIN_L	   1
 	#define CMD_L      64
 
 	#define eeprom_addr(a) (a+EEPROM_OFFSET)
+	#define config_addr(a) (a+CONFIG_OFFSET)
 
     #define PA_OUTPUT_RFO_PIN      0
     #define PA_OUTPUT_PA_BOOST_PIN 1

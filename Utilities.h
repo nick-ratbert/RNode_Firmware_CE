@@ -58,6 +58,10 @@ uint8_t eeprom_read(uint32_t mapped_addr);
   #include "Power.h"
 #endif
 
+#if HAS_WIFI == true
+  #include "Remote.h"
+#endif
+
 #if HAS_INPUT == true
 	#include "Input.h"
 #endif
@@ -751,6 +755,15 @@ void sort_interfaces() {
 
 void serial_write(uint8_t byte) {
 	#if HAS_BLUETOOTH || HAS_BLE == true
+		#if HAS_WIFI == true
+		if (bt_state != BT_STATE_CONNECTED && !wifi_host_is_connected()) {
+			Serial.write(byte);
+		} else if (bt_state == BT_STATE_CONNECTED) {
+			SerialBT.write(byte);
+		} else if (wifi_host_is_connected()) {
+			wifi_remote_write(byte);
+		}
+		#else
 		if (bt_state != BT_STATE_CONNECTED) {
 			Serial.write(byte);
 		} else {
@@ -761,6 +774,13 @@ void serial_write(uint8_t byte) {
 	      if (serial_in_frame && byte == FEND) { SerialBT.flushTXD(); serial_in_frame = false; }
 	      else if (!serial_in_frame && byte == FEND) { serial_in_frame = true; }
       #endif
+		}
+		#endif
+	#elif HAS_WIFI == true
+		if (wifi_host_is_connected()) {
+			wifi_remote_write(byte);
+		} else {
+			Serial.write(byte);
 		}
 	#else
 		Serial.write(byte);

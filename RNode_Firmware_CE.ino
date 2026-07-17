@@ -401,6 +401,10 @@ void setup() {
         kiss_indicate_reset();
       #endif
     } else {
+      #if HAS_WIFI
+        wifi_mode = EEPROM.read(eeprom_addr(ADDR_CONF_WIFI));
+        if (wifi_mode == WR_WIFI_STA || wifi_mode == WR_WIFI_AP) { wifi_remote_init(); }
+      #endif
       kiss_indicate_reset();
     }
 
@@ -658,6 +662,13 @@ void stopRadio(RadioInterface* radio) {
       radio->end();
       sort_interfaces();
       kiss_indicate_radiostate(radio);
+  }
+}
+
+void host_disconnected() {
+  cable_state = CABLE_STATE_DISCONNECTED;
+  for (int i = 0; i < INTERFACE_COUNT; i++) {
+    stopRadio(interface_obj[i]);
   }
 }
 
@@ -1610,6 +1621,10 @@ void loop() {
     if (!console_active && bt_ready) update_bt();
   #endif
 
+  #if HAS_WIFI
+    if (wifi_initialized) update_wifi();
+  #endif
+
   #if HAS_INPUT
     input_read();
   #endif
@@ -1749,17 +1764,40 @@ void buffer_serial() {
     uint8_t c = 0;
 
     #if HAS_BLUETOOTH || HAS_BLE == true
-    while (
+      #if HAS_WIFI
+      while (
+      c < MAX_CYCLES &&
+      ( (bt_state != BT_STATE_CONNECTED && Serial.available()) || (bt_state == BT_STATE_CONNECTED && SerialBT.available()) || (wr_state >= WR_STATE_ON && wifi_remote_available()) )
+      )
+      #else
+      while (
       c < MAX_CYCLES &&
       ( (bt_state != BT_STATE_CONNECTED && Serial.available()) || (bt_state == BT_STATE_CONNECTED && SerialBT.available()) )
       )
+      #endif
     #else
-    while (c < MAX_CYCLES && Serial.available())
+      #if HAS_WIFI
+      while (
+      c < MAX_CYCLES &&
+      ( Serial.available() || (wr_state >= WR_STATE_ON && wifi_remote_available()) )
+      )
+      #else
+      while (c < MAX_CYCLES && Serial.available())
+      #endif
     #endif
     {
       c++;
 
       #if HAS_BLUETOOTH || HAS_BLE == true
+        #if HAS_WIFI
+        if (bt_state == BT_STATE_CONNECTED) {
+          if (!fifo_isfull(&serialFIFO)) { fifo_push(&serialFIFO, SerialBT.read()); }
+        } else if (wifi_host_is_connected()) {
+          if (!fifo_isfull(&serialFIFO)) { fifo_push(&serialFIFO, wifi_remote_read()); }
+        } else {
+          if (!fifo_isfull(&serialFIFO)) { fifo_push(&serialFIFO, Serial.read()); }
+        }
+        #else
         if (bt_state == BT_STATE_CONNECTED) {
           if (!fifo_isfull(&serialFIFO)) {
             fifo_push(&serialFIFO, SerialBT.read());
@@ -1769,10 +1807,19 @@ void buffer_serial() {
             fifo_push(&serialFIFO, Serial.read());
           }
         }
+        #endif
       #else
+        #if HAS_WIFI
+        if (wifi_host_is_connected()) {
+          if (!fifo_isfull(&serialFIFO)) { fifo_push(&serialFIFO, wifi_remote_read()); }
+        } else {
+          if (!fifo_isfull(&serialFIFO)) { fifo_push(&serialFIFO, Serial.read()); }
+        }
+        #else
         if (!fifo_isfull(&serialFIFO)) {
           fifo_push(&serialFIFO, Serial.read());
         }
+        #endif
       #endif
     }
 
