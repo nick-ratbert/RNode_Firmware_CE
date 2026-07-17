@@ -1228,10 +1228,52 @@ void set_implicit_length(uint8_t len) {
 	}
 }
 
+#if HAS_LORA_PA
+  const int tx_gain[PA_GAIN_POINTS] = {PA_GAIN_VALUES};
+#endif
+
+int map_target_power_to_modem_output(int target_tx_power) {
+  #if HAS_LORA_PA
+  int modem_output_dbm = -9;
+  for (int i = 0; i < PA_GAIN_POINTS; i++) {
+    int gain = tx_gain[i];
+    int effective_output_dbm = i + gain;
+    if (effective_output_dbm > target_tx_power) {
+      int diff = effective_output_dbm - target_tx_power;
+      modem_output_dbm = -1*diff;
+      break;
+    } else if (effective_output_dbm == target_tx_power) {
+      modem_output_dbm = i; break;
+    } else if (i == PA_GAIN_POINTS-1) {
+      int diff = target_tx_power - effective_output_dbm;
+      modem_output_dbm = i+diff; break;
+    }
+  }
+  #else
+  int modem_output_dbm = target_tx_power;
+  #endif
+  return modem_output_dbm;
+}
+
+int map_modem_output_to_target_power(int modem_output_dbm) {
+  #if HAS_LORA_PA
+  if (modem_output_dbm < 0) { modem_output_dbm = 0; }
+  if (modem_output_dbm >= PA_GAIN_POINTS) { modem_output_dbm = PA_GAIN_POINTS-1; }
+  int gain = tx_gain[modem_output_dbm];
+  int target_tx_power = modem_output_dbm+gain;
+  #else
+  int target_tx_power = modem_output_dbm;
+  #endif
+  return target_tx_power;
+}
+
 void setTXPower(RadioInterface* radio, int txp) {
     // Todo, revamp this function. The current parameters for setTxPower are
     // suboptimal, as some chips have power amplifiers which means that the max
     // dBm is not always the same.
+    #if HAS_LORA_PA
+    txp = map_target_power_to_modem_output(txp);
+    #endif
     if (model == MODEL_12) {
         if (interfaces[radio->getIndex()] == SX1280) {
             radio->setTxPower(txp, PA_OUTPUT_PA_BOOST_PIN);

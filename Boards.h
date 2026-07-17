@@ -157,12 +157,15 @@
   #define HAS_DISPLAY false
   #define HAS_BLUETOOTH false
   #define HAS_BLE false
+  #define HAS_WIFI false
   #define HAS_TCXO false
   #define HAS_PMU false
   #define HAS_NP false
   #define HAS_EEPROM false
   #define HAS_INPUT false
   #define HAS_SLEEP false
+  #define HAS_LORA_PA false
+  #define HAS_LORA_LNA false
   #define PIN_DISP_SLEEP -1
   #define VALIDATE_FIRMWARE true
 
@@ -1136,10 +1139,28 @@
 
       #define HAS_INPUT true
       #define HAS_SLEEP true
+      #define HAS_LORA_PA true
+      #define HAS_LORA_LNA true
       #define PIN_WAKEUP GPIO_NUM_38
       #define WAKEUP_LEVEL 0
 
       #define INTERFACE_COUNT 1
+
+      // PA/LNA configuration
+      // LNA: ~18.5 dB gain, improves RX sensitivity by ~4 dB
+      #define LORA_LNA_GAIN 19   // Typical 18.5 dB gain, rounded up
+      #define LORA_LNA_GVT 12   // LNA gain variance threshold for noise floor
+      // PA: No GPIO control pins identified yet (PA is always on when 7.5V DCDC active)
+      #define LORA_PA_PWR_EN -1
+      #define LORA_PA_CSD -1
+      #define LORA_PA_CPS -1
+
+      // PA gain curve based on Station G2 conduction test data
+      // Covers SX1262 output range from -9 to +22 dBm (32 points)
+      // Data from: https://wiki.bqvoy.com/en/meshtastic/station-g2
+      #define PA_MAX_OUTPUT 37
+      #define PA_GAIN_POINTS 32
+      #define PA_GAIN_VALUES 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 19, 19, 18, 18, 18, 17, 17
 
       // I2C for OLED display (GROVE I2C socket)
       #define I2C_SCL 6
