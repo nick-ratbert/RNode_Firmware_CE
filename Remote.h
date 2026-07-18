@@ -50,8 +50,9 @@ void wifi_remote_start_ap() {
     if (wr_psk[0] != 0x00) { WiFi.softAP(wr_ssid, wr_psk, wr_channel); }
     else { WiFi.softAP(wr_ssid, NULL, wr_channel); }
   } else {
-    if (wr_psk[0] != 0x00) { WiFi.softAP(bt_devname, wr_psk, wr_channel); }
-    else { WiFi.softAP(bt_devname, NULL, wr_channel); }
+    const char* ap_name = bt_ready ? bt_devname : "RNode";
+    if (wr_psk[0] != 0x00) { WiFi.softAP(ap_name, wr_psk, wr_channel); }
+    else { WiFi.softAP(ap_name, NULL, wr_channel); }
   }
   delay(150);
   WiFi.softAPConfig(ap_ip, ap_ip, ap_nm);
@@ -109,8 +110,14 @@ void wifi_remote_start() {
 }
 
 void wifi_remote_init() {
-  memcpy(wr_hostname, bt_devname, 5);
-  memcpy(wr_hostname+5, bt_devname+6, 4);
+  // Build hostname from bt_devname, or fall back to "RNodeWiFi" if BLE not ready
+  if (bt_ready) {
+    memcpy(wr_hostname, bt_devname, 5);
+    memcpy(wr_hostname+5, bt_devname+6, 4);
+  } else {
+    memcpy(wr_hostname, "RNode", 5);
+    memcpy(wr_hostname+5, "WiFi", 4);
+  }
   wr_hostname[9] = 0x00;
   WiFi.softAPdisconnect(true);
   WiFi.disconnect(true, true);
