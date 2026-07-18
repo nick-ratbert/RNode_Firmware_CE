@@ -870,6 +870,26 @@ void serial_callback(uint8_t sbyte) {
     }
 
   } else if (sbyte == FEND) {
+    // Save accumulated WiFi config data when frame ends
+    #if HAS_WIFI
+    if (command == CMD_WIFI_SSID && frame_len > 0) {
+      for (uint8_t i = 0; i < frame_len && i < 32; i++) {
+        eeprom_update(config_addr(ADDR_CONF_SSID+i), cmdbuf[i]);
+      }
+    } else if (command == CMD_WIFI_PSK && frame_len > 0) {
+      for (uint8_t i = 0; i < frame_len && i < 32; i++) {
+        eeprom_update(config_addr(ADDR_CONF_PSK+i), cmdbuf[i]);
+      }
+    } else if (command == CMD_WIFI_IP && frame_len > 0) {
+      for (uint8_t i = 0; i < frame_len && i < 4; i++) {
+        eeprom_update(config_addr(ADDR_CONF_IP+i), cmdbuf[i]);
+      }
+    } else if (command == CMD_WIFI_NM && frame_len > 0) {
+      for (uint8_t i = 0; i < frame_len && i < 4; i++) {
+        eeprom_update(config_addr(ADDR_CONF_NM+i), cmdbuf[i]);
+      }
+    }
+    #endif
     IN_FRAME = true;
     command = CMD_UNKNOWN;
     frame_len = 0;
@@ -1333,6 +1353,60 @@ void serial_callback(uint8_t sbyte) {
           }
           dia_conf_save(sbyte);
       }
+    #if HAS_WIFI
+    } else if (command == CMD_WIFI_MODE) {
+      wifi_mode = sbyte;
+      eeprom_update(eeprom_addr(ADDR_CONF_WIFI), wifi_mode);
+    } else if (command == CMD_WIFI_CHN) {
+      if (sbyte >= 1 && sbyte <= 14) {
+        wr_channel = sbyte;
+        eeprom_update(eeprom_addr(ADDR_CONF_WCHN), wr_channel);
+      }
+    } else if (command == CMD_WIFI_SSID) {
+      if (sbyte == FESC) {
+        ESCAPE = true;
+      } else {
+        if (ESCAPE) {
+          if (sbyte == TFEND) sbyte = FEND;
+          if (sbyte == TFESC) sbyte = FESC;
+          ESCAPE = false;
+        }
+        if (frame_len < CMD_L) cmdbuf[frame_len++] = sbyte;
+      }
+    } else if (command == CMD_WIFI_PSK) {
+      if (sbyte == FESC) {
+        ESCAPE = true;
+      } else {
+        if (ESCAPE) {
+          if (sbyte == TFEND) sbyte = FEND;
+          if (sbyte == TFESC) sbyte = FESC;
+          ESCAPE = false;
+        }
+        if (frame_len < CMD_L) cmdbuf[frame_len++] = sbyte;
+      }
+    } else if (command == CMD_WIFI_IP) {
+      if (sbyte == FESC) {
+        ESCAPE = true;
+      } else {
+        if (ESCAPE) {
+          if (sbyte == TFEND) sbyte = FEND;
+          if (sbyte == TFESC) sbyte = FESC;
+          ESCAPE = false;
+        }
+        if (frame_len < CMD_L) cmdbuf[frame_len++] = sbyte;
+      }
+    } else if (command == CMD_WIFI_NM) {
+      if (sbyte == FESC) {
+        ESCAPE = true;
+      } else {
+        if (ESCAPE) {
+          if (sbyte == TFEND) sbyte = FEND;
+          if (sbyte == TFESC) sbyte = FESC;
+          ESCAPE = false;
+        }
+        if (frame_len < CMD_L) cmdbuf[frame_len++] = sbyte;
+      }
+    #endif
     } else if (command == CMD_DISP_RCND) {
       #if HAS_DISPLAY
         if (sbyte == FESC) {
