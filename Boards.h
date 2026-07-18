@@ -1161,6 +1161,7 @@
       // Data from: https://wiki.bqvoy.com/en/meshtastic/station-g2
       #define PA_MAX_OUTPUT 37
       #define PA_GAIN_POINTS 32
+      #define PA_GAIN_VALUES_MIN 20
       #define PA_GAIN_VALUES 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 19, 19, 18, 18, 18, 17, 17
 
       // I2C for OLED display (GROVE I2C socket)

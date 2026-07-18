@@ -906,8 +906,9 @@ void kiss_indicate_implicit_length() {
 void kiss_indicate_txpower(RadioInterface* radio) {
     int8_t txp = radio->getTxPower();
     #if HAS_LORA_PA
-    extern int map_modem_output_to_target_power(int);
-    txp = map_modem_output_to_target_power(txp);
+    // Report the original target TX power, not the raw SX1262 output
+    extern int last_pa_target_txp;
+    txp = last_pa_target_txp;
     #endif
 	serial_write(FEND);
     serial_write(CMD_SEL_INT);
@@ -1254,10 +1255,16 @@ void set_implicit_length(uint8_t len) {
 
 #if HAS_LORA_PA
   const int tx_gain[PA_GAIN_POINTS] = {PA_GAIN_VALUES};
+  int last_pa_target_txp = 0;  // Last requested target TX power for PA reporting
 #endif
 
 int map_target_power_to_modem_output(int target_tx_power) {
   #if HAS_LORA_PA
+  // If the target is below the PA's minimum effective output,
+  // pass through directly (PA can't produce less than its minimum)
+  if (target_tx_power < PA_GAIN_VALUES_MIN) {
+    return target_tx_power;
+  }
   int modem_output_dbm = -9;
   for (int i = 0; i < PA_GAIN_POINTS; i++) {
     int gain = tx_gain[i];
@@ -1281,7 +1288,9 @@ int map_target_power_to_modem_output(int target_tx_power) {
 
 int map_modem_output_to_target_power(int modem_output_dbm) {
   #if HAS_LORA_PA
-  if (modem_output_dbm < 0) { modem_output_dbm = 0; }
+  // Values below PA_GAIN_VALUES_MIN were passed through directly by the
+  // forward map, so pass them back directly too
+  if (modem_output_dbm < PA_GAIN_VALUES_MIN) { return modem_output_dbm; }
   if (modem_output_dbm >= PA_GAIN_POINTS) { modem_output_dbm = PA_GAIN_POINTS-1; }
   int gain = tx_gain[modem_output_dbm];
   int target_tx_power = modem_output_dbm+gain;
@@ -1296,6 +1305,7 @@ void setTXPower(RadioInterface* radio, int txp) {
     // suboptimal, as some chips have power amplifiers which means that the max
     // dBm is not always the same.
     #if HAS_LORA_PA
+    last_pa_target_txp = txp;
     txp = map_target_power_to_modem_output(txp);
     #endif
     if (model == MODEL_12) {
