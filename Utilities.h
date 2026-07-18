@@ -905,6 +905,10 @@ void kiss_indicate_implicit_length() {
 
 void kiss_indicate_txpower(RadioInterface* radio) {
     int8_t txp = radio->getTxPower();
+    #if HAS_LORA_PA
+    extern int map_modem_output_to_target_power(int);
+    txp = map_modem_output_to_target_power(txp);
+    #endif
 	serial_write(FEND);
     serial_write(CMD_SEL_INT);
     serial_write(radio->getIndex());
