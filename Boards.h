@@ -185,7 +185,7 @@
 
     #define EEPROM_SIZE 1024
     #define EEPROM_OFFSET EEPROM_SIZE-EEPROM_RESERVED
-    #define CONFIG_OFFSET 0x300
+    #define CONFIG_OFFSET 0x200
 
     #define GPS_BAUD_RATE 9600
     #define PIN_GPS_TX 12
