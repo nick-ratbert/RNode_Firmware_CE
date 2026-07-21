@@ -1505,6 +1505,7 @@
       #define HAS_DISPLAY false
       #define HAS_BLUETOOTH false
       #define HAS_BLE true
+      #define VALIDATE_FIRMWARE false
       #define HAS_CONSOLE false
       #define HAS_PMU false
       #define HAS_NP false

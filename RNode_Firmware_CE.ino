@@ -194,7 +194,7 @@ void setup() {
     boot_seq();
   #endif
 
-  #if BOARD_MODEL != BOARD_RAK4631 && BOARD_MODEL != BOARD_HELTEC_T114 && BOARD_MODEL != BOARD_TECHO && BOARD_MODEL != BOARD_T3S3 && BOARD_MODEL != BOARD_TBEAM_S_V1 && BOARD_MODEL != BOARD_OPENCOM_XL && BOARD_MODEL != BOARD_STATION_G2
+  #if BOARD_MODEL != BOARD_RAK4631 && BOARD_MODEL != BOARD_HELTEC_T114 && BOARD_MODEL != BOARD_TECHO && BOARD_MODEL != BOARD_T3S3 && BOARD_MODEL != BOARD_TBEAM_S_V1 && BOARD_MODEL != BOARD_OPENCOM_XL && BOARD_MODEL != BOARD_STATION_G2 && BOARD_MODEL != BOARD_T1000E
   // Some boards need to wait until the hardware UART is set up before booting
   // the full firmware. In the case of the RAK4631/TECHO, the line below will wait
   // until a serial connection is actually established with a master. Thus, it
@@ -1764,10 +1764,17 @@ void loop() {
       kiss_indicate_error(ERROR_MEMORY_LOW); memory_low = false;
     #endif
   }
+
+  // On nRF52, the FreeRTOS loop task stays ready and the CPU never WFI-sleeps.
+  // delay(1) = vTaskDelay(1) blocks one tick, idle runs, CPU sleeps. Negligible
+  // latency vs LoRa airtime; radio/USB/BLE IRQs wake instantly.
+  #if MCU_VARIANT == MCU_NRF52
+    delay(1);
+  #endif
 }
 
 void process_serial() {
-      buffer_serial();
+       buffer_serial();
       if (!fifo_isempty(&serialFIFO)) serial_poll();
 }
 
