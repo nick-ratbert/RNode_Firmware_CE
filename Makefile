@@ -51,6 +51,7 @@ prep-nrf:
 	arduino-cli core install adafruit:nrf52 --config-file arduino-cli.yaml
 	arduino-cli core install rakwireless:nrf52 --config-file arduino-cli.yaml
 	arduino-cli core install Heltec_nRF52:Heltec_nRF52 --config-file arduino-cli.yaml
+	arduino-cli core install Seeeduino:nrf52 --config-file arduino-cli.yaml
 	arduino-cli lib install "Crypto"
 	arduino-cli lib install "Adafruit GFX Library"
 	arduino-cli lib install "GxEPD2"
@@ -163,6 +164,9 @@ firmware-heltec_t114:
 
 firmware-heltec_t114_gps:
 	arduino-cli compile --log --fqbn Heltec_nRF52:Heltec_nRF52:HT-n5262 -e --build-property "build.partitions=no_ota" --build-property "upload.maximum_size=2097152" --build-property "compiler.cpp.extra_flags=\"-DBOARD_MODEL=0x3C\" \"-DBOARD_VARIANT=0xCB\""
+
+firmware-t1000e:
+	arduino-cli compile --fqbn Seeeduino:nrf52:tracker_t1000_e_lorawan -e --build-property "compiler.cpp.extra_flags=\"-DBOARD_MODEL=0x52\""
 
 upload-tbeam:
 	arduino-cli upload -p $(or $(port), /dev/ttyACM0) --fqbn esp32:esp32:t-beam
@@ -290,6 +294,11 @@ upload-techo:
 	arduino-cli upload -p /dev/ttyACM0 --fqbn adafruit:nrf52:pca10056
 	@sleep 6
 	rnodeconf /dev/ttyACM0 --firmware-hash $$(./partition_hashes from_device /dev/ttyACM0)
+
+upload-t1000e:
+	arduino-cli upload -p $(or $(port), /dev/ttyACM0) --fqbn Seeeduino:nrf52:tracker_t1000_e_lorawan
+	@sleep 6
+	rnodeconf $(or $(port), /dev/ttyACM0) --firmware-hash $$(./partition_hashes from_device $(or $(port), /dev/ttyACM0))
 
 release:  console-site spiffs-image $(shell grep ^release- Makefile | cut -d: -f1)
 
@@ -558,4 +567,10 @@ release-heltec_t114:
 	arduino-cli compile --fqbn Heltec_nRF52:Heltec_nRF52:HT-n5262 $(COMMON_BUILD_FLAGS) --build-property "compiler.cpp.extra_flags=\"-DBOARD_MODEL=0x3C\""
 	cp build/Heltec_nRF52.Heltec_nRF52.HT-n5262/RNode_Firmware_CE.ino.hex build/rnode_firmware_heltec_t114.hex
 	adafruit-nrfutil dfu genpkg --dev-type 0x0052 --application build/rnode_firmware_heltec_t114.hex Release/rnode_firmware_heltec_t114.zip
+	rm -r build
+
+release-t1000e:
+	arduino-cli compile --fqbn Seeeduino:nrf52:tracker_t1000_e_lorawan -e --build-property "compiler.cpp.extra_flags=\"-DBOARD_MODEL=0x52\""
+	cp build/Seeeduino.nrf52.tracker_t1000_e_lorawan/RNode_Firmware_CE.ino.hex build/rnode_firmware_t1000e.hex
+	adafruit-nrfutil dfu genpkg --dev-type 0x0052 --application build/rnode_firmware_t1000e.hex Release/rnode_firmware_t1000e.zip
 	rm -r build
