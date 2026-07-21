@@ -166,7 +166,7 @@ firmware-heltec_t114_gps:
 	arduino-cli compile --log --fqbn Heltec_nRF52:Heltec_nRF52:HT-n5262 -e --build-property "build.partitions=no_ota" --build-property "upload.maximum_size=2097152" --build-property "compiler.cpp.extra_flags=\"-DBOARD_MODEL=0x3C\" \"-DBOARD_VARIANT=0xCB\""
 
 firmware-t1000e:
-	arduino-cli compile --fqbn Seeeduino:nrf52:tracker_t1000_e_lorawan -e --build-property "compiler.cpp.extra_flags=\"-DBOARD_MODEL=0x52\""
+	arduino-cli compile --fqbn Seeeduino:nrf52:tracker_t1000_e_lorawan -e --build-property "compiler.cpp.extra_flags=\"-DBOARD_MODEL=0x53\""
 
 upload-tbeam:
 	arduino-cli upload -p $(or $(port), /dev/ttyACM0) --fqbn esp32:esp32:t-beam
@@ -570,7 +570,7 @@ release-heltec_t114:
 	rm -r build
 
 release-t1000e:
-	arduino-cli compile --fqbn Seeeduino:nrf52:tracker_t1000_e_lorawan -e --build-property "compiler.cpp.extra_flags=\"-DBOARD_MODEL=0x52\""
+	arduino-cli compile --fqbn Seeeduino:nrf52:tracker_t1000_e_lorawan -e --build-property "compiler.cpp.extra_flags=\"-DBOARD_MODEL=0x53\""
 	cp build/Seeeduino.nrf52.tracker_t1000_e_lorawan/RNode_Firmware_CE.ino.hex build/rnode_firmware_t1000e.hex
 	adafruit-nrfutil dfu genpkg --dev-type 0x0052 --application build/rnode_firmware_t1000e.hex Release/rnode_firmware_t1000e.zip
 	rm -r build

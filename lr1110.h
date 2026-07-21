@@ -121,6 +121,7 @@ private:
   static lr1110* _active_modem;
   SPISettings _spiSettings;
   SPIClass* _spiModem;
+  uint32_t _frequency;
   int _ss;
   int _sclk;
   int _mosi;

@@ -146,7 +146,7 @@ int lr1110::begin() {
 
   setSyncWord(0);
   rxAntEnable();
-  setFrequency(frequency);
+  setFrequency(_frequency);
   setTxPower(2);
   enableCrc();
 
@@ -189,8 +189,7 @@ int lr1110::endPacket() {
 }
 
 static unsigned long preamble_detected_at = 0;
-extern long lora_preamble_time_ms;
-extern long lora_header_time_ms;
+
 static bool false_preamble_detected = false;
 
 bool lr1110::dcd() {
@@ -223,7 +222,7 @@ bool lr1110::dcd() {
   if (irq & LR11XX_SYSTEM_IRQ_PREAMBLE_DETECTED) {
     carrier_detected = true;
     if (preamble_detected_at == 0) { preamble_detected_at = now; }
-    if (now - preamble_detected_at > (unsigned long)(lora_preamble_time_ms + lora_header_time_ms)) {
+    if (now - preamble_detected_at > (unsigned long)(_lora_preamble_time_ms + _lora_header_time_ms)) {
       preamble_detected_at = 0;
       if (!header_detected) { false_preamble_detected = true; }
       lr11xx_system_clear_irq_status(CTX, LR11XX_SYSTEM_IRQ_PREAMBLE_DETECTED);
@@ -231,7 +230,7 @@ bool lr1110::dcd() {
   }
 
   if (false_preamble_detected) {
-    lr1110_modem.receive();
+    if (_active_modem) _active_modem->receive();
     false_preamble_detected = false;
   }
 
@@ -246,15 +245,13 @@ int ISR_VECT lr1110::currentRssi() {
   return (int)rssi;
 }
 
-uint8_t lr1110::packetRssiRaw() { return (uint8_t)(-packetRssi()); }
+uint8_t lr1110::packetRssiRaw() { return (uint8_t)(-packetRssi(0xFF)); }
 
-int ISR_VECT lr1110::packetRssi() {
+int ISR_VECT lr1110::packetRssi(uint8_t pkt_snr_raw) {
   lr11xx_radio_pkt_status_lora_t status;
   lr11xx_radio_get_lora_pkt_status(CTX, &status);
   return (int)status.rssi_pkt_in_dbm;
 }
-
-int ISR_VECT lr1110::packetRssi(uint8_t pkt_snr_raw) { return packetRssi(); }
 
 uint8_t ISR_VECT lr1110::packetSnrRaw() {
   lr11xx_radio_pkt_status_lora_t status;
@@ -335,7 +332,7 @@ int lr1110::peek() {
 
 void lr1110::flush() { }
 
-void lr1110::onDio0Rise() { lr1110_modem.handleDio0Rise(); }
+void ISR_VECT lr1110::onDio0Rise() { if (_active_modem) _active_modem->handleDio0Rise(); }
 
 void ISR_VECT lr1110::handleDio0Rise() {
   lr11xx_system_irq_mask_t irq = LR11XX_SYSTEM_IRQ_NONE;
@@ -525,11 +522,10 @@ uint32_t lr1110::getSignalBandwidth() {
   return 0;
 }
 
-extern bool lora_low_datarate;
 void lr1110::handleLowDataRate() {
   if (long((1 << _sf) / (getSignalBandwidth() / 1000)) > 16)
-       { _ldro = true; lora_low_datarate = true;  }
-  else { _ldro = false; lora_low_datarate = false; }
+       { _ldro = true; }
+  else { _ldro = false; }
 }
 
 void lr1110::setSignalBandwidth(uint32_t sbw) {
@@ -584,14 +580,6 @@ void lr1110::setSyncWord(uint16_t sw) {
   // a PHY-level sync word with SX126x/SX127x-based RNodes on the same
   // frequency.
   lr11xx_radio_set_lora_sync_word(CTX, SYNC_WORD_PRIVATE);
-}
-
-void lr1110::setPins(int ss, int reset, int dio0, int busy, int rxen) {
-  _ss = ss;
-  _reset = reset;
-  _dio0 = dio0;
-  _busy = busy;
-  _rxen = rxen;
 }
 
 void lr1110::setModulationParams(uint8_t sf, uint8_t bw, uint8_t cr, int ldro) {

@@ -17,6 +17,10 @@
 #include <SPI.h>
 #include "Utilities.h"
 
+#if MODEM == LR1110
+#include "lr1110.h"
+#endif
+
 #if MCU_VARIANT == MCU_NRF52
   #if BOARD_MODEL == BOARD_RAK4631 || BOARD_MODEL == BOARD_OPENCOM_XL
       #define INTERFACE_SPI
@@ -49,6 +53,17 @@
                 NRF_SPIM1, 
                 interface_pins[0][3], 
                 interface_pins[0][1], 
+                interface_pins[0][2]
+               )
+      };
+  #elif BOARD_MODEL == BOARD_T1000E
+    #define INTERFACE_SPI
+    SPIClass interface_spi[1] = {
+            // LR1110
+            SPIClass(
+                NRF_SPIM0,
+                interface_pins[0][3],
+                interface_pins[0][1],
                 interface_pins[0][2]
                )
       };

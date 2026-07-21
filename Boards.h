@@ -124,7 +124,7 @@
   #define MODEL_17            0x17 // T-Echo 868/915 MHz
 
   #define PRODUCT_T1000E      0x1E // Seeed SenseCAP T1000-E
-  #define BOARD_T1000E        0x52 // T1000-E (nRF52840 + LR1110)
+  #define BOARD_T1000E        0x53 // T1000-E (nRF52840 + LR1110)
   #define MODEL_B5            0xB5 // T1000-E, LR1110, 863-928 MHz
 
   #define PRODUCT_HMBRW       0xF0
@@ -1543,6 +1543,30 @@
       const int pin_vbat = 2;
       const int pin_vcc = 4;
       const int pin_vchg = 5;
+
+      #define INTERFACE_COUNT 1
+      const uint8_t interfaces[INTERFACE_COUNT] = {LR1110};
+      const bool interface_cfg[INTERFACE_COUNT][3] = {
+          {
+              false, // DEFAULT_SPI
+              true,  // HAS_TCXO
+              false  // DIO2_AS_RF_SWITCH (LR1110 handles RF switch internally)
+          },
+      };
+      const int8_t interface_pins[INTERFACE_COUNT][10] = {
+          {
+              12,  // pin_ss
+              11,  // pin_sclk
+              41,  // pin_mosi
+              40,  // pin_miso
+              7,   // pin_busy
+              33,  // pin_dio
+              42,  // pin_reset
+              -1,  // pin_txen
+              -1,  // pin_rxen
+              -1   // pin_tcxo_enable
+          }
+      };
 
     #else
       #error An unsupported nRF board was selected. Cannot compile RNode firmware.
