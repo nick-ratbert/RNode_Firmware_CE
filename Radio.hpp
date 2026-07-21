@@ -240,7 +240,7 @@ public:
             lora_symbols += _preambleLength + 0.25 + 8;
             packet_cost_ms += lora_symbols * _lora_symbol_time_ms;
         }
-        else if (interfaces[_index] == SX1262 || interfaces[_index] == SX1280) {
+        else if (interfaces[_index] == SX1262 || interfaces[_index] == SX1280 || interfaces[_index] == LR1110) {
             if (_sf < 7) {
                 lora_symbols += (8*written + PHY_CRC_LORA_BITS - 4*_sf + PHY_HEADER_LORA_SYMBOLS);
                 lora_symbols /=                              4*_sf;
