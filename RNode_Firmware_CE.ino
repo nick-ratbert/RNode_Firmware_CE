@@ -301,6 +301,27 @@ void setup() {
             interface_obj_sorted[i] = obj;
             break;
           }
+
+          #if MODEM == LR1110
+          case LR1110:
+          {
+              lr1110* obj;
+              // if default spi enabled
+              if (interface_cfg[i][0]) {
+                obj = new lr1110(i, &SPI, interface_pins[i][0], interface_pins[i][1],
+                interface_pins[i][2], interface_pins[i][3], interface_pins[i][6],
+                interface_pins[i][5], interface_pins[i][4], interface_pins[i][8]);
+              }
+              else {
+                obj = new lr1110(i, &interface_spi[i], interface_pins[i][0], interface_pins[i][1],
+                interface_pins[i][2], interface_pins[i][3], interface_pins[i][6],
+                interface_pins[i][5], interface_pins[i][4], interface_pins[i][8]);
+              }
+            interface_obj[i] = obj;
+            interface_obj_sorted[i] = obj;
+            break;
+          }
+          #endif
           
           default:
             break;

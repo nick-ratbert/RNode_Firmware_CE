@@ -372,6 +372,13 @@ uint8_t boot_vector = 0x00;
 		void led_tx_off() { digitalWrite(pin_led_tx, LED_OFF); }
 		void led_id_on()  { }
 		void led_id_off() { }
+	#elif BOARD_MODEL == BOARD_T1000E
+		void led_rx_on()  { digitalWrite(pin_led_rx, HIGH); }
+		void led_rx_off() {	digitalWrite(pin_led_rx, LOW); }
+		void led_tx_on()  { digitalWrite(pin_led_tx, HIGH); }
+		void led_tx_off() { digitalWrite(pin_led_tx, LOW); }
+		void led_id_on()  { }
+		void led_id_off() { }
 	#endif
 #endif
 
@@ -1316,6 +1323,8 @@ void setTXPower(RadioInterface* radio, int txp) {
     if (model == MODEL_62) radio->setTxPower(txp, PA_OUTPUT_PA_BOOST_PIN);
     if (model == MODEL_63) radio->setTxPower(txp, PA_OUTPUT_PA_BOOST_PIN);
 
+    if (model == MODEL_B5) radio->setTxPower(txp, PA_OUTPUT_PA_BOOST_PIN);
+
     if (model == MODEL_E4) radio->setTxPower(txp, PA_OUTPUT_PA_BOOST_PIN);
     if (model == MODEL_E9) radio->setTxPower(txp, PA_OUTPUT_PA_BOOST_PIN);
     if (model == MODEL_E3) radio->setTxPower(txp, PA_OUTPUT_PA_BOOST_PIN);
@@ -1547,7 +1556,7 @@ bool eeprom_product_valid() {
 	#if PLATFORM == PLATFORM_ESP32
 	if (rval == PRODUCT_RNODE || rval == BOARD_RNODE_NG_20 || rval == BOARD_RNODE_NG_21 || rval == PRODUCT_HMBRW || rval == PRODUCT_TBEAM || rval == PRODUCT_T32_10 || rval == PRODUCT_T32_20 || rval == PRODUCT_T32_21 || rval == PRODUCT_H32_V2 || rval == PRODUCT_H32_V3 || rval == PRODUCT_TDECK_V1 || rval == PRODUCT_TBEAM_S_V1 || rval == PRODUCT_H_W_PAPER || rval == PRODUCT_XIAO_S3 || rval == PRODUCT_STATION_G2) {
 	#elif PLATFORM == PLATFORM_NRF52
-	if (rval == PRODUCT_RAK4631 || rval == PRODUCT_HELTEC_T114 || rval == PRODUCT_OPENCOM_XL || rval == PRODUCT_TECHO || rval == PRODUCT_HMBRW) {
+	if (rval == PRODUCT_RAK4631 || rval == PRODUCT_HELTEC_T114 || rval == PRODUCT_OPENCOM_XL || rval == PRODUCT_TECHO || rval == PRODUCT_HMBRW || rval == PRODUCT_T1000E) {
 	#else
 	if (false) {
 	#endif
@@ -1603,6 +1612,8 @@ bool eeprom_model_valid() {
     if (model == MODEL_11 || model == MODEL_12 || model == MODEL_13 || model == MODEL_14) {
     #elif BOARD_MODEL == BOARD_OPENCOM_XL
     if (model == MODEL_21) {
+    #elif BOARD_MODEL == BOARD_T1000E
+    if (model == MODEL_B5) {
 	#elif BOARD_MODEL == BOARD_HUZZAH32
 	if (model == MODEL_FF) {
 	#elif BOARD_MODEL == BOARD_E22_ESP32

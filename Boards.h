@@ -123,6 +123,11 @@
   #define MODEL_16            0x16 // T-Echo 433 MHz
   #define MODEL_17            0x17 // T-Echo 868/915 MHz
 
+  #define PRODUCT_T1000E      0x1E // Seeed SenseCAP T1000-E
+  #define BOARD_T1000E        0x52 // T1000-E (nRF52840 + LR1110)
+  #define MODEL_B5            0xB5 // T1000-E, LR1110, 863-928 MHz
+
+  #define PRODUCT_HMBRW       0xF0
   #define PRODUCT_STATION_G2   0x60 // B&Q Station G2 devices
   #define BOARD_STATION_G2     0x61 // Station G2 (ESP32-S3 + SX1262)
   #define MODEL_62             0x62 // Station G2, 915 MHz (US/AUS)
@@ -1490,6 +1495,55 @@
       #define PIN_GPS_RX 37
       #define PIN_GPS_TX 39 
       #endif
+    #elif BOARD_MODEL == BOARD_T1000E
+      // Seeed SenseCAP Wio Tracker T1000-E
+      // nRF52840 + Semtech LR1110
+      // Pin mapping from idan2025's RNode firmware port and Seeed's Arduino BSP
+      // Attribution: idan2025 (https://github.com/idan2025/Rnode_Firmware)
+      #define MODEM LR1110
+      #define HAS_EEPROM false
+      #define HAS_DISPLAY false
+      #define HAS_BLUETOOTH false
+      #define HAS_BLE true
+      #define HAS_CONSOLE false
+      #define HAS_PMU false
+      #define HAS_NP false
+      #define HAS_SD false
+      #define HAS_TCXO true
+      #define HAS_BUSY true
+      #define HAS_INPUT true
+      #define HAS_SLEEP true
+      #define CONFIG_UART_BUFFER_SIZE 6144
+      #define CONFIG_QUEUE_SIZE 6144
+      #define CONFIG_QUEUE_MAX_LENGTH 200
+      #define EEPROM_SIZE 296
+      #define EEPROM_OFFSET EEPROM_SIZE-EEPROM_RESERVED
+      #define BLE_MANUFACTURER "Seeed"
+      #define BLE_MODEL "T1000-E"
+
+      // Button
+      const int pin_btn_usr1 = 6;
+
+      // LEDs
+      const int pin_led_rx = 24;   // LED_GREEN
+      const int pin_led_tx = 3;     // LED_RED
+
+      // LR1110 SPI and control pins. RF switch and TCXO are controlled
+      // internally by the LR1110 via system commands, not MCU GPIOs.
+      const int pin_cs = 12;
+      const int pin_sclk = 11;
+      const int pin_mosi = 41;
+      const int pin_miso = 40;
+      const int pin_busy = 7;
+      const int pin_dio = 33;
+      const int pin_reset = 42;
+      const int pin_tcxo_enable = -1;
+
+      // Battery ADC
+      const int pin_vbat = 2;
+      const int pin_vcc = 4;
+      const int pin_vchg = 5;
+
     #else
       #error An unsupported nRF board was selected. Cannot compile RNode firmware.
     #endif
