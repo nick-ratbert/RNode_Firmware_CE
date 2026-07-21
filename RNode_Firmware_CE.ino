@@ -57,18 +57,13 @@
                )
       };
   #elif BOARD_MODEL == BOARD_T1000E
-    // T1000-E uses DEFAULT_SPI (NRF_SPIM3) — interface_spi is a dummy
-    // that's never actually used (DEFAULT_SPI=true routes to &SPI).
-    // Use NRF_SPIM2 to avoid conflicting with the global SPI on SPIM3.
+    // T1000-E uses DEFAULT_SPI only — no custom interface_spi needed.
+    // Define INTERFACE_SPI to prevent the default-constructor fallback
+    // (which crashes on Seeeduino nRF52 — no SPIClass() default ctor).
+    // The array itself is never instantiated; DEFAULT_SPI=true routes to &SPI.
     #define INTERFACE_SPI
-    SPIClass interface_spi[1] = {
-            SPIClass(
-                NRF_SPIM2,
-                interface_pins[0][3],
-                interface_pins[0][1],
-                interface_pins[0][2]
-               )
-      };
+    // dummy placeholder — never used since DEFAULT_SPI=true
+    extern SPIClass interface_spi[];
   #endif
 #endif
 
