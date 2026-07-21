@@ -57,11 +57,13 @@
                )
       };
   #elif BOARD_MODEL == BOARD_T1000E
+    // T1000-E uses DEFAULT_SPI (NRF_SPIM3) — interface_spi is a dummy
+    // that's never actually used (DEFAULT_SPI=true routes to &SPI).
+    // Use NRF_SPIM2 to avoid conflicting with the global SPI on SPIM3.
     #define INTERFACE_SPI
     SPIClass interface_spi[1] = {
-            // LR1110
             SPIClass(
-                NRF_SPIM0,
+                NRF_SPIM2,
                 interface_pins[0][3],
                 interface_pins[0][1],
                 interface_pins[0][2]
