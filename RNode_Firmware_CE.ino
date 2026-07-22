@@ -57,13 +57,17 @@
                )
       };
   #elif BOARD_MODEL == BOARD_T1000E
-    // T1000-E uses DEFAULT_SPI only — no custom interface_spi needed.
-    // Define INTERFACE_SPI to prevent the default-constructor fallback
-    // (which crashes on Seeeduino nRF52 — no SPIClass() default ctor).
-    // The array itself is never instantiated; DEFAULT_SPI=true routes to &SPI.
+    // T1000-E uses custom SPI with T1000-E specific pins.
+    // NRF_SPIM3 is the high-speed SPI (32MHz) used by the Seeeduino T1000-E variant.
     #define INTERFACE_SPI
-    // dummy placeholder — never used since DEFAULT_SPI=true
-    extern SPIClass interface_spi[];
+    SPIClass interface_spi[1] = {
+            SPIClass(
+                NRF_SPIM3,
+                interface_pins[0][3],  // MISO = 40
+                interface_pins[0][1],  // SCK  = 11
+                interface_pins[0][2]   // MOSI = 41
+               )
+      };
   #endif
 #endif
 
