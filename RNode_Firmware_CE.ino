@@ -355,6 +355,7 @@ void setup() {
             case SX1276:
             case SX1278:
             case SX1280:
+            case LR1110:
                 selected_radio = interface_obj[i];
                 break;
 
@@ -390,7 +391,7 @@ void setup() {
         }
     }
 
-  #if HAS_DISPLAY
+    #if HAS_DISPLAY
     #if HAS_EEPROM
     if (EEPROM.read(eeprom_addr(ADDR_CONF_DSET)) != CONF_OK_BYTE) {
     #elif MCU_VARIANT == MCU_NRF52
