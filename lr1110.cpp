@@ -122,10 +122,12 @@ void lr1110::calibrate(void) {
 int lr1110::begin() {
   if (!_preinit_done) { if (!preInit()) { return false; } }
 
+
   // Proven init sequence, matches Semtech's reference RAL layer
   // (ral_lr11xx_init) and Seeed's board-specific RF switch / TCXO
   // configuration for this hardware.
   lr11xx_system_set_reg_mode(CTX, LR11XX_SYSTEM_REG_MODE_DCDC);
+
 
   lr11xx_system_rfswitch_cfg_t rfswitch_cfg;
   rfswitch_cfg.enable  = LR11XX_SYSTEM_RFSW0_HIGH | LR11XX_SYSTEM_RFSW1_HIGH | LR11XX_SYSTEM_RFSW2_HIGH | LR11XX_SYSTEM_RFSW3_HIGH;
@@ -141,18 +143,26 @@ int lr1110::begin() {
   enableTCXO();
   calibrate();
 
+
   loraMode();
   standby();
 
   setSyncWord(0);
   rxAntEnable();
   setFrequency(_frequency);
+
+
   setTxPower(2);
+
+
   enableCrc();
 
   setModulationParams(_sf, _bw, _cr, _ldro);
   setPacketParams(_preambleLength, _implicitHeaderMode, _payloadLength, _crcMode);
   lr11xx_radio_cfg_rx_boosted(CTX, true);
+
+  _radio_online = true;
+
 
   return 1;
 }

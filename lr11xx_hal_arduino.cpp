@@ -33,7 +33,7 @@ static void lr11xx_hal_wait_on_busy() {
   if (_busy_pin == -1) { return; }
   unsigned long start = millis();
   while (digitalRead(_busy_pin) == HIGH) {
-    if (millis() - start > 1000) { break; }
+    if (millis() - start > 5000) { break; } // 5s timeout for TCXO/calibration
   }
 }
 

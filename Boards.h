@@ -1549,9 +1549,9 @@
       const uint8_t interfaces[INTERFACE_COUNT] = {LR1110};
       const bool interface_cfg[INTERFACE_COUNT][3] = {
           {
-              false, // DEFAULT_SPI — use custom interface_spi with T1000-E pins
+              false, // DEFAULT_SPI — use custom interface_spi on SPIM2
               true,  // HAS_TCXO
-              false  // DIO2_AS_RF_SWITCH (LR1110 handles RF switch internally)
+              false  // DIO2_AS_RF_SWITCH
           },
       };
       const int8_t interface_pins[INTERFACE_COUNT][10] = {

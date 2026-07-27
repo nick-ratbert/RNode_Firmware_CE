@@ -57,12 +57,11 @@
                )
       };
   #elif BOARD_MODEL == BOARD_T1000E
-    // T1000-E uses custom SPI with T1000-E specific pins.
-    // NRF_SPIM3 is the high-speed SPI (32MHz) used by the Seeeduino T1000-E variant.
+    // T1000-E uses SPIM2 (not SPIM3 which is shared with SoftDevice/BLE)
     #define INTERFACE_SPI
     SPIClass interface_spi[1] = {
             SPIClass(
-                NRF_SPIM3,
+                NRF_SPIM2,
                 interface_pins[0][3],  // MISO = 40
                 interface_pins[0][1],  // SCK  = 11
                 interface_pins[0][2]   // MOSI = 41
@@ -369,6 +368,9 @@ void setup() {
         }
         if (selected_radio->preInit()) {
           modems_installed = true;
+          #if BOARD_MODEL == BOARD_T1000E
+          // Diagnostic: 3 slow blinks = preInit succeeded
+          #endif
           #if HAS_INPUT
             // Skip quick-reset console activation
           #else
@@ -389,6 +391,9 @@ void setup() {
           #endif
         } else {
           modems_installed = false;
+          #if BOARD_MODEL == BOARD_T1000E
+          // Diagnostic: 10 fast blinks = preInit FAILED (no radio found)
+          #endif
         }
         if (!modems_installed) {
             break;
@@ -652,14 +657,23 @@ bool startRadio(RadioInterface* radio) {
   if (modems_installed && !console_active) {
     if (!radio->getRadioOnline()) {
         if (!radio->getRadioLock() && hw_ready) {
+          #if BOARD_MODEL == BOARD_T1000E
+          // Diagnostic: 2 slow blinks = hw_ready OK, about to call begin()
+          #endif
           if (!radio->begin()) {
             // The radio could not be started.
             // Indicate this failure over both the
             // serial port and with the onboard LEDs
+            #if BOARD_MODEL == BOARD_T1000E
+            // Diagnostic: 10 fast blinks = begin() FAILED
+            #endif
             kiss_indicate_error(ERROR_INITRADIO);
             led_indicate_error(0);
             return false;
           } else {
+            #if BOARD_MODEL == BOARD_T1000E
+            // Diagnostic: 5 medium blinks = begin() succeeded, radio online
+            #endif
             radio->enableCrc();
 
             radio->onReceive(receive_callback);
