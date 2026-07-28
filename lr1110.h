@@ -94,6 +94,7 @@ public:
   void dumpRegisters(Stream& out) {}
 
   void handleDio0Rise();
+  void processDio0();
   bool getPacketValidity();
 
 private:

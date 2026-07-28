@@ -1660,6 +1660,13 @@ void loop() {
       }
 
     #elif MCU_VARIANT == MCU_NRF52
+      #if MODEM == LR1110
+      // Process pending DIO0 interrupt in main loop context (not ISR)
+      // The Adafruit nRF52 SPIM driver is not interrupt-safe
+      for (int i = 0; i < INTERFACE_COUNT; i++) {
+        ((lr1110*)interface_obj[i])->processDio0();
+      }
+      #endif
       modem_packet_t *modem_packet = NULL;
       if(modem_packet_queue && xQueueReceive(modem_packet_queue, &modem_packet, 0) == pdTRUE && modem_packet) {
         uint8_t packet_interface = modem_packet->interface;

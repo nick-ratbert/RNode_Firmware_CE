@@ -349,13 +349,22 @@ void lr1110::flush() { }
 
 void ISR_VECT lr1110::onDio0Rise() { if (_active_modem) _active_modem->handleDio0Rise(); }
 
+volatile bool _dio0_pending = false;
+
 void ISR_VECT lr1110::handleDio0Rise() {
+  // Don't do SPI from ISR — just set a flag and process in the main loop.
+  // The Adafruit nRF52 SPIM driver is not interrupt-safe.
+  _dio0_pending = true;
+}
+
+void lr1110::processDio0() {
+  if (!_dio0_pending) { return; }
+  _dio0_pending = false;
+
   lr11xx_system_irq_mask_t irq = LR11XX_SYSTEM_IRQ_NONE;
   lr11xx_system_get_and_clear_irq_status(CTX, &irq);
 
   if (irq & LR11XX_SYSTEM_IRQ_RX_DONE) {
-    // Completed packet: get_and_clear above already cleared the latched
-    // preamble/header status bits, so just reset the false-preamble timer.
     preamble_detected_at = 0;
     if (!(irq & LR11XX_SYSTEM_IRQ_CRC_ERROR)) {
       _packetIndex = 0;
