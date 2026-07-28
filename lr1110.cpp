@@ -130,11 +130,16 @@ int lr1110::begin() {
 
 
   lr11xx_system_rfswitch_cfg_t rfswitch_cfg;
+  // T1000-E RF switch config (matches Meshtastic's rfswitch.h):
+  //   DIO5=RFSW0, DIO6=RFSW1, DIO7=RFSW2, DIO8=RFSW3
+  //   RX:  DIO5+DIO8 high
+  //   TX:  DIO5+DIO6+DIO8 high
+  //   TX_HP: DIO6+DIO8 high
   rfswitch_cfg.enable  = LR11XX_SYSTEM_RFSW0_HIGH | LR11XX_SYSTEM_RFSW1_HIGH | LR11XX_SYSTEM_RFSW2_HIGH | LR11XX_SYSTEM_RFSW3_HIGH;
   rfswitch_cfg.standby = 0;
-  rfswitch_cfg.rx      = LR11XX_SYSTEM_RFSW0_HIGH;
-  rfswitch_cfg.tx       = LR11XX_SYSTEM_RFSW0_HIGH | LR11XX_SYSTEM_RFSW1_HIGH;
-  rfswitch_cfg.tx_hp    = LR11XX_SYSTEM_RFSW1_HIGH;
+  rfswitch_cfg.rx      = LR11XX_SYSTEM_RFSW0_HIGH | LR11XX_SYSTEM_RFSW3_HIGH;
+  rfswitch_cfg.tx       = LR11XX_SYSTEM_RFSW0_HIGH | LR11XX_SYSTEM_RFSW1_HIGH | LR11XX_SYSTEM_RFSW3_HIGH;
+  rfswitch_cfg.tx_hp    = LR11XX_SYSTEM_RFSW1_HIGH | LR11XX_SYSTEM_RFSW3_HIGH;
   rfswitch_cfg.tx_hf    = 0;
   rfswitch_cfg.gnss     = LR11XX_SYSTEM_RFSW2_HIGH;
   rfswitch_cfg.wifi     = LR11XX_SYSTEM_RFSW3_HIGH;
