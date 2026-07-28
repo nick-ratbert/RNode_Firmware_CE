@@ -187,6 +187,9 @@ int lr1110::endPacket() {
   lr11xx_regmem_write_buffer8(CTX, _txbuf, (uint8_t)_payloadLength);
   setPacketParams(_preambleLength, _implicitHeaderMode, _payloadLength, _crcMode);
 
+  // Detach DIO1 interrupt during TX to avoid ISR firing on TX_DONE
+  detachInterrupt(digitalPinToInterrupt(_dio0));
+
   lr11xx_system_clear_irq_status(CTX, LR11XX_SYSTEM_IRQ_ALL_MASK);
   lr11xx_radio_set_tx(CTX, 0);
 
@@ -199,6 +202,9 @@ int lr1110::endPacket() {
     yield();
   }
   if (!(irq & LR11XX_SYSTEM_IRQ_TX_DONE)) { timed_out = true; }
+
+  // Reattach DIO1 interrupt for RX
+  attachInterrupt(digitalPinToInterrupt(_dio0), lr1110::onDio0Rise, RISING);
 
   if (timed_out) { return 0; } else { return 1; }
 }
