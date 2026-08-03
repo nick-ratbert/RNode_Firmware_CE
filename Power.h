@@ -475,9 +475,12 @@ bool init_pmu() {
       pinMode(pin_vbat, INPUT);
     #endif
     #if BOARD_MODEL == BOARD_T1000E
-      // T1000-E: 12-bit ADC, 3.0V internal reference, 2.0x divider
+      // T1000-E: 14-bit ADC, 3.0V internal reference, 2.0x divider
       analogReadResolution(14);
       analogReference(AR_INTERNAL_3_0);
+      // Enable power for battery ADC circuit (required by T1000-E hardware)
+      pinMode(38, OUTPUT); digitalWrite(38, HIGH); // P1.6 = PIN_3V3_EN
+      pinMode(39, OUTPUT); digitalWrite(39, HIGH); // P1.7 = PIN_3V3_ACC_EN
       // Charge status pins
       pinMode(5, INPUT);   // P0.05 = EXT_PWR_DETECT
       pinMode(35, INPUT);  // P1.03 = CHARGE_STA (active LOW)
