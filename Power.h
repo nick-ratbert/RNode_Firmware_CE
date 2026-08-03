@@ -196,10 +196,7 @@ void measure_battery() {
       float battery_measurement = (float)(analogRead(pin_vbat)) * 0.007067;
     #elif BOARD_MODEL == BOARD_T1000E
       // T1000-E: P0.02/AIN0, ADC multiplier 2.0x, 3.0V internal ref, 14-bit SAADC
-      int raw_vdd = analogReadVDD();
-      int raw_adc = analogRead(pin_vbat);
-      float battery_measurement = (float)raw_adc / 16383.0 * 6.0;
-      Serial.printf("T1000-E battery: raw_adc=%d, raw_vdd=%d, voltage=%.3fV\r\n", raw_adc, raw_vdd, battery_measurement);
+      float battery_measurement = (float)(analogRead(pin_vbat)) / 16383.0 * 6.0;
     #else
       float battery_measurement = (float)(analogRead(pin_vbat)) / 4095.0*7.26;
     #endif
