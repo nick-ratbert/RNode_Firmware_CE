@@ -478,6 +478,8 @@ bool init_pmu() {
       pinMode(5, INPUT);   // P0.05 = EXT_PWR_DETECT
       pinMode(35, INPUT);  // P1.03 = CHARGE_STA (active LOW)
       pinMode(36, INPUT);  // P1.04 = CHARGE_DONE
+      // Dummy read to initialize SAADC
+      analogRead(pin_vbat);
     #endif
     return true;
   #elif BOARD_MODEL == BOARD_HELTEC32_V3
