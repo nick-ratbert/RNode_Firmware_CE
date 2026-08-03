@@ -266,11 +266,24 @@ void measure_battery() {
       }
       #else
       // Simple battery state for boards without advanced tracking
+      #if BOARD_MODEL == BOARD_T1000E
+      // T1000-E: P0.05 = external power detect, P1.03 = charge status
+      bool ext_power = (digitalRead(5) == HIGH);
+      bool charging = (digitalRead(35) == LOW);  // CHARGE_STA is active LOW
+      if (ext_power && charging) {
+        battery_state = BATTERY_STATE_CHARGING;
+      } else if (ext_power && !charging) {
+        battery_state = BATTERY_STATE_CHARGED;
+      } else {
+        battery_state = BATTERY_STATE_DISCHARGING;
+      }
+      #else
       if (battery_percent < 100.0) {
         battery_state = BATTERY_STATE_DISCHARGING;
       } else {
         battery_state = BATTERY_STATE_CHARGED;
       }
+      #endif
       #endif
 
       #if MCU_VARIANT == MCU_NRF52
@@ -461,6 +474,10 @@ bool init_pmu() {
       // T1000-E: 12-bit ADC, 3.0V internal reference, 2.0x divider
       analogReadResolution(12);
       analogReference(AR_INTERNAL_3_0);
+      // Charge status pins
+      pinMode(5, INPUT);   // P0.05 = EXT_PWR_DETECT
+      pinMode(35, INPUT);  // P1.03 = CHARGE_STA (active LOW)
+      pinMode(36, INPUT);  // P1.04 = CHARGE_DONE
     #endif
     return true;
   #elif BOARD_MODEL == BOARD_HELTEC32_V3
