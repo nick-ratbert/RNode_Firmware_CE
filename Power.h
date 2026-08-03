@@ -471,7 +471,9 @@ void update_pmu() {
 
 bool init_pmu() {
   #if BOARD_MODEL == BOARD_RNODE_NG_21 || BOARD_MODEL == BOARD_LORA32_V2_1 || BOARD_MODEL == BOARD_TDECK || BOARD_MODEL == BOARD_T3S3 || BOARD_MODEL == BOARD_TECHO || BOARD_MODEL == BOARD_T1000E
-    pinMode(pin_vbat, INPUT);
+    #if BOARD_MODEL != BOARD_T1000E
+      pinMode(pin_vbat, INPUT);
+    #endif
     #if BOARD_MODEL == BOARD_T1000E
       // T1000-E: 12-bit ADC, 3.0V internal reference, 2.0x divider
       analogReadResolution(14);
