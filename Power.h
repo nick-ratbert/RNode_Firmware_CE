@@ -164,6 +164,14 @@
   bool bat_voltage_dropping = false;
   float bat_delay_v = 0;
   float bat_state_change_v = 0;
+#elif BOARD_MODEL == BOARD_T1000E
+  // T1000-E: LiPo battery, ADC on P0.02, 2.0x divider
+  #define BAT_V_MIN       3.15
+  #define BAT_V_MAX       4.2
+  #define BAT_SAMPLES     5
+  float bat_p_samples[BAT_SAMPLES];
+  float bat_v_samples[BAT_SAMPLES];
+  uint8_t bat_samples_count = 0;
 #endif
 
 uint32_t last_pmu_update = 0;
@@ -174,7 +182,7 @@ uint8_t pmu_rc = 0;
 void kiss_indicate_battery();
 
 void measure_battery() {
-  #if BOARD_MODEL == BOARD_RNODE_NG_21 || BOARD_MODEL == BOARD_LORA32_V2_1 || BOARD_MODEL == BOARD_HELTEC32_V3 || BOARD_MODEL == BOARD_TDECK || BOARD_MODEL == BOARD_T3S3 || BOARD_MODEL == BOARD_HELTEC_T114 || BOARD_MODEL == BOARD_TECHO
+  #if BOARD_MODEL == BOARD_RNODE_NG_21 || BOARD_MODEL == BOARD_LORA32_V2_1 || BOARD_MODEL == BOARD_HELTEC32_V3 || BOARD_MODEL == BOARD_TDECK || BOARD_MODEL == BOARD_T3S3 || BOARD_MODEL == BOARD_HELTEC_T114 || BOARD_MODEL == BOARD_TECHO || BOARD_MODEL == BOARD_T1000E
     battery_installed = true;
     battery_indeterminate = true;
 
@@ -186,6 +194,10 @@ void measure_battery() {
       float battery_measurement = (float)(analogRead(pin_vbat)) * 0.017165;
     #elif BOARD_MODEL == BOARD_TECHO
       float battery_measurement = (float)(analogRead(pin_vbat)) * 0.007067;
+    #elif BOARD_MODEL == BOARD_T1000E
+      // T1000-E: P0.02/AIN0, ADC multiplier 2.0x, 3.0V internal ref, 12-bit
+      // Meshtastic: ADC_MULTIPLIER = 2.0F, VBAT_AR_INTERNAL = AR_INTERNAL_3_0
+      float battery_measurement = (float)(analogRead(pin_vbat)) / 4095.0 * 6.0;
     #else
       float battery_measurement = (float)(analogRead(pin_vbat)) / 4095.0*7.26;
     #endif
@@ -212,11 +224,14 @@ void measure_battery() {
       }
       battery_voltage = battery_voltage/BAT_SAMPLES;
       
+      #if BOARD_MODEL == BOARD_TECHO
       if (bat_delay_v == 0) bat_delay_v = battery_voltage;
       if (bat_state_change_v == 0) bat_state_change_v = battery_voltage;
+      #endif
       if (battery_percent > 100.0) battery_percent = 100.0;
       if (battery_percent < 0.0) battery_percent = 0.0;
 
+      #if BOARD_MODEL == BOARD_TECHO
       if (bat_samples_count%BAT_SAMPLES == 0) {
         float bat_delay_diff = bat_state_change_v-battery_voltage;
         if (bat_delay_diff < 0) { bat_delay_diff *= -1; }
@@ -226,7 +241,6 @@ void measure_battery() {
             if (bat_delay_diff > 0.008) {
               bat_voltage_dropping = true;
               bat_state_change_v = battery_voltage;
-              // SerialBT.printf("STATE CHANGE to DISCHARGE at delta=%.3fv. State change v is now %.3fv.\n", bat_delay_diff, bat_state_change_v);
             }
           }
         } else {
@@ -234,7 +248,6 @@ void measure_battery() {
             if (bat_delay_diff > 0.01) {
               bat_voltage_dropping = false;
               bat_state_change_v = battery_voltage;
-              // SerialBT.printf("STATE CHANGE to CHARGE at delta=%.3fv. State change v is now %.3fv.\n", bat_delay_diff, bat_state_change_v);
             }
           }
         }
@@ -251,6 +264,14 @@ void measure_battery() {
           battery_state = BATTERY_STATE_CHARGED;
         }
       }
+      #else
+      // Simple battery state for boards without advanced tracking
+      if (battery_percent < 100.0) {
+        battery_state = BATTERY_STATE_DISCHARGING;
+      } else {
+        battery_state = BATTERY_STATE_CHARGED;
+      }
+      #endif
 
       #if MCU_VARIANT == MCU_NRF52
         if (bt_state != BT_STATE_OFF) { blebas.write(battery_percent); }
@@ -434,8 +455,13 @@ void update_pmu() {
 }
 
 bool init_pmu() {
-  #if BOARD_MODEL == BOARD_RNODE_NG_21 || BOARD_MODEL == BOARD_LORA32_V2_1 || BOARD_MODEL == BOARD_TDECK || BOARD_MODEL == BOARD_T3S3 || BOARD_MODEL == BOARD_TECHO
+  #if BOARD_MODEL == BOARD_RNODE_NG_21 || BOARD_MODEL == BOARD_LORA32_V2_1 || BOARD_MODEL == BOARD_TDECK || BOARD_MODEL == BOARD_T3S3 || BOARD_MODEL == BOARD_TECHO || BOARD_MODEL == BOARD_T1000E
     pinMode(pin_vbat, INPUT);
+    #if BOARD_MODEL == BOARD_T1000E
+      // T1000-E: 12-bit ADC, 3.0V internal reference, 2.0x divider
+      analogReadResolution(12);
+      analogReference(AR_INTERNAL_3_0);
+    #endif
     return true;
   #elif BOARD_MODEL == BOARD_HELTEC32_V3
     pinMode(pin_ctrl,OUTPUT);
