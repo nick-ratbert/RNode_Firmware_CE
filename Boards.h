@@ -1504,7 +1504,7 @@
       #define HAS_EEPROM false
       #define HAS_DISPLAY false
       #define HAS_BLUETOOTH false
-      #define HAS_BLE false  // TEMP: disable BLE to test SoftDevice SPI interference
+      #define HAS_BLE true
       #define VALIDATE_FIRMWARE false
       #define HAS_CONSOLE false
       #define HAS_PMU false
