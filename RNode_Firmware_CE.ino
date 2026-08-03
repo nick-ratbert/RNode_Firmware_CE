@@ -1788,6 +1788,23 @@ void loop() {
     #endif
   }
 
+  // Heartbeat LED — slow blink when radio is online, off when not
+  #if BOARD_MODEL == BOARD_T1000E
+  {
+    static unsigned long last_heartbeat = 0;
+    static bool heartbeat_state = false;
+    if (hw_ready && modems_installed) {
+      if (millis() - last_heartbeat > 2000) {
+        heartbeat_state = !heartbeat_state;
+        digitalWrite(pin_led_rx, heartbeat_state ? HIGH : LOW);
+        last_heartbeat = millis();
+      }
+    } else {
+      digitalWrite(pin_led_rx, LOW);
+    }
+  }
+  #endif
+
   // On nRF52, the FreeRTOS loop task stays ready and the CPU never WFI-sleeps.
   // delay(1) = vTaskDelay(1) blocks one tick, idle runs, CPU sleeps. Negligible
   // latency vs LoRa airtime; radio/USB/BLE IRQs wake instantly.
