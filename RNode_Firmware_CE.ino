@@ -1554,6 +1554,11 @@ void validate_status() {
           if (modems_installed) {
             if (device_init()) {
               hw_ready = true;
+              #if BOARD_MODEL == BOARD_T1000E
+              // Pre-arm the radio during boot so RNS doesn't time out
+              // waiting for begin() (TCXO + calibration takes several seconds)
+              startRadio(selected_radio);
+              #endif
             } else {
               hw_ready = false;
             }
